@@ -14,10 +14,10 @@ Resources:
       CodeUri: auto-web/
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
-      Environment:
-        Variables:
-          DEBUG: "*"
-          NODE_ENV: dev
+      #Environment:
+      #  Variables:
+      #    DEBUG: "*"
+      #    NODE_ENV: dev
       Events:
         EveryFri:
           Type: Schedule

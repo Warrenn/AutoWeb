@@ -1,23 +1,16 @@
 const chromium = require('chrome-aws-lambda');
 
 exports.lambdaHandler = async (event, context) => {
-    let slsChrome;
-    let browser;
-    let page;
-    let navigationPromise;
-    let userName = 'w_enslin';
-    let passWord = '$NMyhhBacy07';
-
     try {
 
-        browser = await chromium.puppeteer.launch({
+        const browser = await chromium.puppeteer.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath,
             headless: chromium.headless,
           });
         
-        page = await browser.newPage();
+        const page = await browser.newPage();
         //await page.goto("https://www.fieldglass.net",{waitUntil:'networkidle2'});
         await page.goto("https://www.example.com");
 
