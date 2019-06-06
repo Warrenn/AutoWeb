@@ -1,6 +1,4 @@
-const launchChrome = require("@serverless-chrome/lambda");
-const CDP = require("chrome-remote-interface");
-const puppeteer = require("puppeteer");
+const chromium = require('chrome-aws-lambda');
 
 exports.lambdaHandler = async (event, context) => {
     let slsChrome;
@@ -12,18 +10,13 @@ exports.lambdaHandler = async (event, context) => {
 
     try {
 
-        slsChrome = await launchChrome();
-        browser = await puppeteer.connect({
-            //https://github.com/cyrus-and/chrome-remote-interface#cdpversionoptions-callback
-            // fetch the browser version (since Chrome 62 the browser target URL is
-            // generated at runtime and can be obtained via the '/json/version'
-            // endpoint,
-            //https://pptr.dev/#?product=Puppeteer&version=v1.17.0&show=api-browserwsendpoint
-            //https://chromedevtools.github.io/devtools-protocol/#how-do-i-access-the-browser-target
-            browserWSEndpoint: (await CDP.Version()).webSocketDebuggerUrl,
-
-
-        });
+        browser = await chromium.puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath,
+            headless: chromium.headless,
+          });
+        
         page = await browser.newPage();
         //await page.goto("https://www.fieldglass.net",{waitUntil:'networkidle2'});
         await page.goto("https://www.example.com");

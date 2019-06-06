@@ -13,9 +13,14 @@ Resources:
     Properties:
       CodeUri: auto-web/
       Handler: app.lambdaHandler
-      Runtime: nodejs10.x
+      Runtime: nodejs8.10
+      Environment:
+        Variables:
+          DEBUG: "*"
+          NODE_ENV: dev
       Events:
         EveryFri:
           Type: Schedule
           Properties:
             Schedule:  cron(0 0 17 ? * FRI *)
+
