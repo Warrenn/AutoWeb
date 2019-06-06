@@ -7,7 +7,10 @@
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0"
+    "@serverless-chrome/lambda": "^1.0.0-55",
+    "axios": "^0.18.0",
+    "chrome-remote-interface": "^0.27.2",
+    "puppeteer": "^1.17.0"
   },
   "scripts": {
     "test": "mocha tests/unit/"
