@@ -1,60 +1,75 @@
-const chromium = require('chrome-aws-lambda');
+const chromium = require('chrome-aws-lambda')
+const AWS = require('aws-sdk')
+const client = new AWS.SecretsManager({ region: 'eu-west-1' })
+
+let browser = null
+let page = null
+
+function getSecret(secretId) {
+    return new Promise((resolve, reject) => {
+        client.getSecretValue({ SecretId: secretId }, (err, data) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            try {
+                let result = JSON.parse(data.SecretString);
+                resolve(result)
+            }
+            catch (e) {
+                reject(e)
+            }
+        })
+    })
+};
 
 exports.lambdaHandler = async (event, context) => {
     try {
+        const fieldglass = await getSecret('fieldglass')
+        const username = fieldglass.username
+        const password = fieldglass.password
 
-        const browser = await chromium.puppeteer.launch({
+        browser = await chromium.puppeteer.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath,
             headless: chromium.headless,
-          });
-        
-        const page = await browser.newPage();
-        //await page.goto("https://www.fieldglass.net",{waitUntil:'networkidle2'});
-        await page.goto("https://www.example.com");
+        })
 
-        //console.log("content:"+(await resp.text()));
-        
-        //await page.evaluate(()=>console.log(document.querySelector('input')));
+        page = await browser.newPage()
+        const navigationPromise = page.waitForNavigation()
+        await page.goto("https://www.fieldglass.net", { waitUntil: 'networkidle2' })
+
         await page.setViewport({ width: 1920, height: 1001 })
-        let s = await page.waitForXPath('/html/body/div/p[2]/a');
-        console.log((await page.content()));
-        /*await page.click('#usernameId_new');
 
-        //await page.waitForSelector('#usernameId_new');
-        await page.click('#usernameId_new');
-        await page.type('#usernameId_new', userName);
+        await page.waitForSelector('#usernameId_new')
+        await page.click('#usernameId_new')
+        await page.type('#usernameId_new', username)
 
-        //await page.waitForSelector('form > #content_area_new > #primary_content #passwordId_new')
-        await page.click('form > #content_area_new > #primary_content #passwordId_new')
-        await page.type('form > #content_area_new > #primary_content #passwordId_new', passWord);
+        await page.waitForSelector('#passwordId_new')
+        await page.click('#passwordId_new')
+        await page.type('#passwordId_new', password)
 
-        //await page.waitForSelector('form > #content_area_new > #primary_content > .entryLoginInput_button > .formLoginButton_new')
+        await page.waitForSelector('form > #content_area_new > #primary_content > .entryLoginInput_button > .formLoginButton_new')
         await page.click('form > #content_area_new > #primary_content > .entryLoginInput_button > .formLoginButton_new')
 
-        //await page.waitForSelector('#menuBarId > #viewMenuTitle > figure > a > .anchorText')
-        await page.click('#menuBarId > #viewMenuTitle > figure > a > .anchorText')
+        await navigationPromise
 
-        //await page.waitForSelector('.column #viewMenu_3_timeSheets_link')
-        await page.click('.column #viewMenu_3_timeSheets_link')
+        const footerleft = await page.waitForSelector('#disclaimer > div.footerLeft')
+        const textContent = await (await footerleft.getProperty('textContent')).jsonValue()
 
-        //await browser.close()*/
+        return textContent
 
     } catch (err) {
-        console.log(err);
-        return err;
+        console.log(err)
+        return err
     } finally {
-        /*if (page) {
-            await page.close();
+        if (page) {
+            await page.close()
         }
 
         if (browser) {
-            await browser.disconnect();
+            await browser.disconnect()
         }
-
-        if (slsChrome) {
-            await slsChrome.kill();
-        }*/
     }
-};
+}
