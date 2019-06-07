@@ -25,7 +25,7 @@ function getSecret(secretId) {
 
 exports.lambdaHandler = async (event, context) => {
     try {
-        const fieldglass = await getSecret('fieldglass')
+        const fieldglass = await getSecret('autowebsecrets')
         const username = fieldglass.username
         const password = fieldglass.password
 

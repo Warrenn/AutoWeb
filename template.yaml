@@ -1,41 +1,45 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Transform: AWS::Serverless-2016-10-31
-Description: >
-  AutoWeb
+Description: 'AutoWeb
 
-Parameters:
-  CronSchedule:
-    Type: String
-    Default: cron(0 0 17 ? * FRI *)
-  UserName:
-    Type: String
-    NoEcho: true
-  Password:
-    Type: String
-    NoEcho: true
-
+  '
 Globals:
   Function:
     Timeout: 30
-
+Parameters:
+  CronExpression:
+    Type: String
+    Default: cron(0 17 ? * FRI *)
+  Password:
+    NoEcho: true
+    Type: String
+    Default: password
+  UserName:
+    NoEcho: true
+    Type: String
+    Default: username
 Resources:
   AutoWebFunction:
-    Type: AWS::Serverless::Function 
     Properties:
-      CodeUri: auto-web/
-      Handler: app.lambdaHandler
-      Runtime: nodejs8.10
-      #Environment:
-      #  Variables:
-      #    DEBUG: "*"
-      #    NODE_ENV: dev
+      CodeUri: auto-web
       Events:
-        EveryFri:
+        CronEvent:
           Type: Schedule
           Properties:
-            Schedule: !Ref CronSchedule
+            Schedule:
+              !Ref CronExpression
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
   AutoWebSecrets:
-    Type: AWS::SecretsManager::Secret
     Properties:
-      Name: fieldglass
-      SecretString: !Join [ '', [ '{\"username\":\"', !Ref UserName, '\",\"password\":\"', !Ref Password, '\"}'] ]
+      Name: autowebsecrets
+      SecretString:
+        Fn::Join:
+        - ''
+        - - '{"username":"'
+          - Ref: UserName
+          - '","password":"'
+          - Ref: Password
+          - '"}'
+    Type: AWS::SecretsManager::Secret
+Transform: AWS::Serverless-2016-10-31
