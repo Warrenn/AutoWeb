@@ -3,6 +3,17 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   AutoWeb
 
+Parameters:
+  CronSchedule:
+    Type: String
+    Default: cron(0 0 17 ? * FRI *)
+  UserName:
+    Type: String
+    NoEcho: true
+  Password:
+    Type: String
+    NoEcho: true
+
 Globals:
   Function:
     Timeout: 30
@@ -22,5 +33,9 @@ Resources:
         EveryFri:
           Type: Schedule
           Properties:
-            Schedule:  cron(0 0 17 ? * FRI *)
-
+            Schedule: !Ref CronSchedule
+  AutoWebSecrets:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: fieldglass
+      SecretString: !Join [ '', [ '{\"username\":\"', !Ref UserName, '\",\"password\":\"', !Ref Password, '\"}'] ]

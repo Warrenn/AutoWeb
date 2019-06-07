@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AutoWeb
+
+  '
+Globals:
+  Function:
+    Timeout: 30
+Parameters:
+  CronSchedule:
+    Default: cron(0 0 17 ? * FRI *)
+    Type: String
+  Password:
+    NoEcho: true
+    Type: String
+  UserName:
+    NoEcho: true
+    Type: String
+Resources:
+  AutoWebFunction:
+    Properties:
+      CodeUri: AutoWebFunction
+      Events:
+        EveryFri:
+          Properties:
+            Schedule:
+              Ref: CronSchedule
+          Type: Schedule
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  AutoWebSecrets:
+    Properties:
+      Name: fieldglass
+      SecretString:
+        Fn::Join:
+        - ''
+        - - '{\"username\":\"'
+          - Ref: UserName
+          - \",\"password\":\"
+          - Ref: Password
+          - \"}
+    Type: AWS::SecretsManager::Secret
+Transform: AWS::Serverless-2016-10-31
