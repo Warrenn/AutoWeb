@@ -8,7 +8,7 @@
             "type": "node",
             "request": "attach",
             "name": "Launch Program",
-            "localRoot": "${workspaceRoot}/auto-web",
+            "localRoot": "${workspaceRoot}/airborne-time",
             "port": 9229,
             "remoteRoot": "/var/task",
             "protocol": "inspector",
@@ -19,12 +19,12 @@
             "type": "node",
             "request": "launch",
             "name": "Mocha All Files",
-            "program": "${workspaceRoot}/auto-web/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceRoot}/airborne-time/node_modules/mocha/bin/_mocha",
             "args": [
                 "--timeout",
                 "999999",
                 "--colors",
-                "${workspaceRoot}/auto-web/tests/unit"
+                "${workspaceRoot}/airborne-time/tests/unit"
             ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"

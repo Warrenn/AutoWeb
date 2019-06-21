@@ -1,13 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: 'AirborneTime
-  '
-
+Description: 'AirborneTime '
 Globals:
   Function:
     Timeout: 900
     MemorySize: 512
-
 Parameters:
   CronExpression:
     Type: String
@@ -20,16 +17,15 @@ Parameters:
     NoEcho: true
     Type: String
     Default: username
-
 Resources:
   AirborneTimeFunction:
     Type: AWS::Serverless::Function
     Properties:
       Policies:
-        - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: 
-              !Ref AirborneTimeSecrets
-      CodeUri: airborne-time
+      - AWSSecretsManagerGetSecretValuePolicy:
+          SecretArn:
+            Ref: AirborneTimeSecrets
+      CodeUri: s3://busyweb-autotime/a2c265cfba709f7f79e4aa79cbd1a1fc
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
       Events:
@@ -38,7 +34,6 @@ Resources:
           Properties:
             Schedule:
               Ref: CronExpression
-
   AirborneTimeSecrets:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -51,11 +46,16 @@ Resources:
           - '","password":"'
           - Ref: Password
           - '"}'
-
 Outputs:
   AirborneTimeFunction:
-    Description: "Airborne Time Lambda Function ARN"
-    Value: !GetAtt AirborneTimeFunction.Arn
+    Description: Airborne Time Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - AirborneTimeFunction
+      - Arn
   AirborneTimeFunctionIamRole:
-    Description: "Implicit IAM Role created for Airborne Time function"
-    Value: !GetAtt AirborneTimeFunctionRole.Arn
+    Description: Implicit IAM Role created for Airborne Time function
+    Value:
+      Fn::GetAtt:
+      - AirborneTimeFunctionRole
+      - Arn
