@@ -25,9 +25,9 @@ function getSecret(secretId) {
 
 exports.lambdaHandler = async (event, context) => {
     try {
-        const fieldglass = await getSecret('autowebsecrets')
-        const username = fieldglass.username
-        const password = fieldglass.password
+        const autowebsecrets = await getSecret('autowebsecrets')
+        const username = autowebsecrets.username
+        const password = autowebsecrets.password
 
         browser = await chromium.puppeteer.launch({
             args: chromium.args,
@@ -38,27 +38,16 @@ exports.lambdaHandler = async (event, context) => {
 
         page = await browser.newPage()
         const navigationPromise = page.waitForNavigation()
-        await page.goto("https://www.fieldglass.net", { waitUntil: 'networkidle2' })
+        await page.goto("https://www.example.com", { waitUntil: 'networkidle2' })
 
         await page.setViewport({ width: 1920, height: 1001 })
 
-        await page.waitForSelector('#usernameId_new')
-        await page.click('#usernameId_new')
-        await page.type('#usernameId_new', username)
-
-        await page.waitForSelector('#passwordId_new')
-        await page.click('#passwordId_new')
-        await page.type('#passwordId_new', password)
-
-        await page.waitForSelector('form > #content_area_new > #primary_content > .entryLoginInput_button > .formLoginButton_new')
-        await page.click('form > #content_area_new > #primary_content > .entryLoginInput_button > .formLoginButton_new')
-
         await navigationPromise
 
-        const footerleft = await page.waitForSelector('#disclaimer > div.footerLeft')
+        const footerleft = await page.waitForSelector('body > div > p:nth-child(2)')
         const textContent = await (await footerleft.getProperty('textContent')).jsonValue()
 
-        return textContent
+        return { username, password, textContent }
 
     } catch (err) {
         console.log(err)

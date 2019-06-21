@@ -1,12 +1,12 @@
 # AutoWeb
 
-This is a sample template for AutoWeb - Below is a brief explanation of what we have generated for you:
+This is a sample template for AutoWeb:
 
 ```bash
 .
 ├── README.MD                   <-- This instructions file
 ├── event.json                  <-- API Gateway Proxy Integration event payload
-├── hello_world                 <-- Source code for a lambda function
+├── auto-web                    <-- Source code for a lambda function
 │   └── app.js                  <-- Lambda function code
 │   └── package.json            <-- NodeJS dependencies and scripts
 │   └── tests                   <-- Unit tests
@@ -22,6 +22,8 @@ This is a sample template for AutoWeb - Below is a brief explanation of what we 
 
 * [Docker installed](https://www.docker.com/community-edition)
 
+* [SAM Cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+
 ## Setup process
 
 ### Local development
@@ -29,27 +31,7 @@ This is a sample template for AutoWeb - Below is a brief explanation of what we 
 **Invoking function locally using a local sample payload**
 
 ```bash
-sam local invoke HelloWorldFunction --event event.json
-```
- 
-**Invoking function locally through local API Gateway**
-
-```bash
-sam local start-api
-```
-
-If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/hello`
-
-**SAM CLI** is used to emulate both Lambda and API Gateway locally and uses our `template.yaml` to understand how to bootstrap this environment (runtime, where the source code is, etc.) - The following excerpt is what the CLI will read in order to initialize an API and its routes:
-
-```yaml
-...
-Events:
-    HelloWorld:
-        Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-        Properties:
-            Path: /hello
-            Method: get
+sam local invoke AutoWebFunction --event event.json
 ```
 
 ## Packaging and deployment
@@ -58,13 +40,12 @@ AWS Lambda NodeJS runtime requires a flat folder with all dependencies including
 
 ```yaml
 ...
-    HelloWorldFunction:
+    AutoWebFunction:
         Type: AWS::Serverless::Function
         Properties:
-            CodeUri: hello-world/
+            CodeUri: auto-web/
             ...
 ```
-
 Firstly, we need a `S3 bucket` where we can upload our Lambda functions packaged as ZIP before we deploy anything - If you don't have a S3 bucket to store code artifacts then this is a good time to create one:
 
 ```bash
@@ -95,7 +76,7 @@ After deployment is complete you can run the following command to retrieve the A
 ```bash
 aws cloudformation describe-stacks \
     --stack-name autoweb \
-    --query 'Stacks[].Outputs[?OutputKey==`HelloWorldApi`]' \
+    --query 'Stacks[].Outputs[?OutputKey==`AutoWebApi`]' \
     --output table
 ``` 
 
@@ -106,7 +87,7 @@ To simplify troubleshooting, SAM CLI has a command called sam logs. sam logs let
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-sam logs -n HelloWorldFunction --stack-name autoweb --tail
+sam logs -n AutoWebFunction --stack-name autoweb --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
@@ -137,7 +118,7 @@ Here are a few things you can try to get more acquainted with building serverles
 
 * Uncomment lines on `app.js`
 * Build the project with ``sam build --use-container``
-* Invoke with ``sam local invoke HelloWorldFunction --event event.json``
+* Invoke with ``sam local invoke AutoWebFunction --event event.json``
 * Update tests
 
 ### Create an additional API resource
@@ -175,10 +156,7 @@ All commands used throughout this document
 
 ```bash
 # Invoke function locally with event.json as an input
-sam local invoke HelloWorldFunction --event event.json
-
-# Run API Gateway locally
-sam local start-api
+sam local invoke AutoWebFunction --event event.json
 
 # Create S3 bucket
 aws s3 mb s3://BUCKET_NAME
@@ -197,11 +175,11 @@ sam deploy \
 # Describe Output section of CloudFormation stack previously created
 aws cloudformation describe-stacks \
     --stack-name autoweb \
-    --query 'Stacks[].Outputs[?OutputKey==`HelloWorldApi`]' \
+    --query 'Stacks[].Outputs[?OutputKey==`AutoWebApi`]' \
     --output table
 
 # Tail Lambda function Logs using Logical name defined in SAM Template
-sam logs -n HelloWorldFunction --stack-name autoweb --tail
+sam logs -n AutoWebFunction --stack-name autoweb --tail
 ```
 
 **NOTE**: Alternatively this could be part of package.json scripts section.

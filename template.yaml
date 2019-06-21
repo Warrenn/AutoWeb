@@ -1,10 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
 Description: 'AutoWeb
-
   '
+
 Globals:
   Function:
-    Timeout: 30
+    Timeout: 900
+    MemorySize: 512
+
 Parameters:
   CronExpression:
     Type: String
@@ -17,20 +20,27 @@ Parameters:
     NoEcho: true
     Type: String
     Default: username
+
 Resources:
   AutoWebFunction:
+    Type: AWS::Serverless::Function
     Properties:
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: 
+              !Ref AutoWebSecrets
       CodeUri: auto-web
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
       Events:
         CronEvent:
           Type: Schedule
           Properties:
             Schedule:
-              !Ref CronExpression
-      Handler: app.lambdaHandler
-      Runtime: nodejs8.10
-    Type: AWS::Serverless::Function
+              Ref: CronExpression
+
   AutoWebSecrets:
+    Type: AWS::SecretsManager::Secret
     Properties:
       Name: autowebsecrets
       SecretString:
@@ -41,5 +51,11 @@ Resources:
           - '","password":"'
           - Ref: Password
           - '"}'
-    Type: AWS::SecretsManager::Secret
-Transform: AWS::Serverless-2016-10-31
+
+Outputs:
+  AutoWebFunction:
+    Description: "Auto Web Lambda Function ARN"
+    Value: !GetAtt AutoWebFunction.Arn
+  AutoWebFunctionIamRole:
+    Description: "Implicit IAM Role created for Auto Web function"
+    Value: !GetAtt AutoWebFunctionRole.Arn
