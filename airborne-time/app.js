@@ -24,7 +24,7 @@ function getSecret(secretId) {
 
 exports.lambdaHandler = async(event, context) => {
     try {
-        const airbornetimesecrets = await getSecret('airbornetimesecrets')
+        const airbornetimesecrets = await getSecret('airbornesecrets')
         const username = airbornetimesecrets.username
         const password = airbornetimesecrets.password
 

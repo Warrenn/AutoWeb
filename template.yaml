@@ -42,7 +42,7 @@ Resources:
   AirborneTimeSecrets:
     Type: AWS::SecretsManager::Secret
     Properties:
-      Name: airbornetimesecrets
+      Name: airbornesecrets
       SecretString:
         Fn::Join:
         - ''
