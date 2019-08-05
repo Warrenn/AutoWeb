@@ -57,7 +57,7 @@ exports.lambdaHandler = async(event, context) => {
         page.click('#LogOn_Login')
         await page.waitForNavigation({ waitUntil: 'networkidle0' })
 
-        let barkSel = await page.waitForSelector('div[title="Barclays Africa Development Services 2017 - .Net Dev"] > input')
+        let barkSel = await page.waitForSelector('div[title="Absa - .Net Dev"] > input')
         let barcId = await (await barkSel.getProperty('id')).jsonValue();
         let barcRow = barcId.match(/TimeSheet_ProjectTasks_(\d+)__TaskID/)[1]
 
