@@ -26,9 +26,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Policies:
-        - AWSSecretsManagerGetSecretValuePolicy:
-            SecretArn: 
-              !Ref AirborneTimeSecrets
+        - SSMParameterReadPolicy:
+            ParameterName: airbornesecrets
       CodeUri: airborne-time
       Handler: app.lambdaHandler
       Runtime: nodejs8.10
@@ -38,19 +37,57 @@ Resources:
           Properties:
             Schedule:
               Ref: CronExpression
-
-  AirborneTimeSecrets:
-    Type: AWS::SecretsManager::Secret
+    
+  CustomProvision:
+    Type: Custom::CustomProvision
     Properties:
-      Name: airbornesecrets
-      SecretString:
-        Fn::Join:
-        - ''
-        - - '{"username":"'
-          - Ref: UserName
-          - '","password":"'
-          - Ref: Password
-          - '"}'
+      ServiceToken: !GetAtt ProvisionParameterFunction.Arn
+      ParameterName: airbornesecrets
+      UserName: !Ref UserName
+      Password: !Ref Password
+  
+  ProvisionParameterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: provision
+      Handler: app.lambdaHandler
+      Runtime: nodejs8.10
+      Role: !GetAtt LambdaExecutionRole.Arn
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+              - ssm:GetParameterHistory
+              - ssm:GetParametersByPath
+              - ssm:GetParameters
+              - ssm:GetParameter
+              - ssm:DeleteParameter
+            Resource: "*"
 
 Outputs:
   AirborneTimeFunction:

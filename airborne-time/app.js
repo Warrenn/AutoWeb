@@ -1,19 +1,19 @@
 const chromium = require('chrome-aws-lambda')
 const AWS = require('aws-sdk')
-const client = new AWS.SecretsManager({ region: 'eu-west-1' })
+var ssm = new AWS.SSM({ apiVersion: '2014-11-06' })
 
 let browser = null
 let page = null
 
 function getSecret(secretId) {
     return new Promise((resolve, reject) => {
-        client.getSecretValue({ SecretId: secretId }, (err, data) => {
+        ssm.getParameter({ Name: secretId, WithDecryption: true }, (err, data) => {
             if (err) {
                 reject(err)
                 return
             }
             try {
-                let result = JSON.parse(data.SecretString);
+                let result = JSON.parse(data)
                 resolve(result)
             } catch (e) {
                 reject(e)

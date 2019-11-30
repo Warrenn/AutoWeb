@@ -1,0 +1,14 @@
+{
+  "name": "provision",
+  "version": "1.0.0",
+  "description": "provision private parameters in the parameter store",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SAM CLI",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.580.0"
+  }
+}
