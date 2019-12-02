@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AirborneTime '
+Globals:
+  Function:
+    MemorySize: 512
+    Timeout: 900
+Outputs:
+  AirborneTimeFunction:
+    Description: Airborne Time Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - AirborneTimeFunction
+      - Arn
+  AirborneTimeFunctionIamRole:
+    Description: Implicit IAM Role created for Airborne Time function
+    Value:
+      Fn::GetAtt:
+      - AirborneTimeFunctionRole
+      - Arn
+  CustomProvisionArn:
+    Description: The arn for the custom resource
+    Value:
+      Fn::GetAtt:
+      - CustomProvision
+      - Arn
+Parameters:
+  CronExpression:
+    Default: cron(0 17 ? * FRI *)
+    Type: String
+  Password:
+    Default: password
+    NoEcho: true
+    Type: String
+  UserName:
+    Default: username
+    NoEcho: true
+    Type: String
+Resources:
+  AirborneTimeFunction:
+    Properties:
+      CodeUri: s3://busyweb-autotime/700942a95dafb481fa5a5847a8b7f76a
+      Events:
+        CronEvent:
+          Properties:
+            Schedule:
+              Ref: CronExpression
+          Type: Schedule
+      Handler: app.lambdaHandler
+      Policies:
+      - SSMParameterReadPolicy:
+          ParameterName: airbornesecrets
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  CustomProvision:
+    Properties:
+      ParameterName: airbornesecrets
+      Password:
+        Ref: Password
+      ServiceToken:
+        Fn::GetAtt:
+        - ProvisionParameterFunction
+        - Arn
+      UserName:
+        Ref: UserName
+    Type: Custom::CustomProvision
+  LambdaExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: arn:aws:logs:*:*:*
+          - Action:
+            - ssm:PutParameter
+            - ssm:DeleteParameter
+            - ssm:GetParameterHistory
+            - ssm:GetParametersByPath
+            - ssm:GetParameters
+            - ssm:GetParameter
+            - ssm:DeleteParameter
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: root
+    Type: AWS::IAM::Role
+  ProvisionParameterFunction:
+    Properties:
+      CodeUri: s3://busyweb-autotime/222fa66ab218bee838efbb274e0b5fe2
+      Handler: app.lambdaHandler
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31

@@ -1,39 +1,34 @@
-const AWS = require('aws-sdk')
-var ssm = new AWS.SSM({ apiVersion: '2014-11-06' })
+const AWS = require("aws-sdk");
+const SSM = new AWS.SSM({ apiVersion: '2014-11-06' });
+var responseStatus = "FAILED";
+var responseData = {};
 
-function putSecret(parameterName, parameterValue) {
-    return new Promise((resolve, reject) => {
-        ssm.putParameter({
+exports.handler = function(event, context) {
+    try {
+        // For Delete requests, immediately send a SUCCESS response.
+        if (event.RequestType == "Delete") {
+            return sendResponse(event, context, "SUCCESS");
+        }
+
+        SSM.putParameter({
             Name: parameterName,
             Type: "SecureString",
             Value: parameterValue
         }, (err, data) => {
             if (err) {
-                reject(err)
-                return
-            }
-            try {
-                resolve(data)
-            } catch (e) {
-                reject(e)
+                responseData = { Error: "put parameter call failed" };
+                console.log(data.Error + ":\n", err);
+            } else {
+                responseStatus = "SUCCESS";
+                responseData = { Message: `Successfully Created ${parameterName}` }
             }
         })
-    })
-};
-
-exports.lambdaHandler = async(event, context) => {
-    try {
-        const parameterValue = {
-            username: event.ResourceProperties.UserName,
-            password: event.ResourceProperties.Password
-        }
-        const parameterString = JSON.stringify(parameterValue)
-        await putSecret(event.ResourceProperties.ParameterName, parameterString)
-        sendResponse(event, context, "SUCCESS")
     } catch (err) {
-        sendResponse(event, context, "SUCCESS", err)
+        responseData = { Error: "handler call failed" };
+        console.log(data.Error + ":\n", err);
     }
-}
+    return sendResponse(event, context, responseStatus, responseData);
+};
 
 // Send response to the pre-signed S3 URL 
 function sendResponse(event, context, responseStatus, responseData) {
@@ -83,4 +78,6 @@ function sendResponse(event, context, responseStatus, responseData) {
     // write data to request body
     request.write(responseBody);
     request.end();
+
+    return responseBody;
 }

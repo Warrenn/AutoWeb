@@ -96,3 +96,6 @@ Outputs:
   AirborneTimeFunctionIamRole:
     Description: "Implicit IAM Role created for Airborne Time function"
     Value: !GetAtt AirborneTimeFunctionRole.Arn
+  CustomProvisionArn:
+    Description: "The arn for the custom resource"
+    Value: !GetAtt CustomProvision.Arn
