@@ -3,7 +3,7 @@ const SSM = new AWS.SSM({ apiVersion: '2014-11-06' });
 var responseStatus = "FAILED";
 var responseData = {};
 
-exports.handler = function(event, context) {
+exports.lambdaHandler = function(event, context) {
     try {
         // For Delete requests, immediately send a SUCCESS response.
         if (event.RequestType == "Delete") {
@@ -25,7 +25,7 @@ exports.handler = function(event, context) {
         })
     } catch (err) {
         responseData = { Error: "handler call failed" };
-        console.log(data.Error + ":\n", err);
+        console.log(responseData.Error + ":\n", err);
     }
     return sendResponse(event, context, responseStatus, responseData);
 };
@@ -60,6 +60,8 @@ function sendResponse(event, context, responseStatus, responseData) {
         }
     };
 
+    let options_string = JSON.stringify(options);
+    console.log("OPTIONS:\n", options_string);
     console.log("SENDING RESPONSE...\n");
 
     var request = https.request(options, function(response) {
