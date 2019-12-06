@@ -1,33 +1,38 @@
 const AWS = require("aws-sdk");
 const SSM = new AWS.SSM({ apiVersion: '2014-11-06' });
-var responseStatus = "FAILED";
-var responseData = {};
 
 exports.lambdaHandler = function(event, context) {
+    const returnData = { logGroupName: context.logGroupName, logStreamName: context.logStreamName }
     try {
         // For Delete requests, immediately send a SUCCESS response.
         if (event.RequestType == "Delete") {
-            return sendResponse(event, context, "SUCCESS");
+            sendResponse(event, context, "SUCCESS");
+            return;
         }
+
+        const parameterName = event.ResourceProperties.ParameterName;
+        const username = event.ResourceProperties.UserName;
+        const password = event.ResourceProperties.Password;
+        const parameterValue = JSON.stringify({ username, password });
 
         SSM.putParameter({
             Name: parameterName,
             Type: "SecureString",
-            Value: parameterValue
+            Value: parameterValue,
+            Overwrite: true
         }, (err, data) => {
             if (err) {
-                responseData = { Error: "put parameter call failed" };
-                console.log(data.Error + ":\n", err);
+                console.log(err);
+                sendResponse(event, context, "FAILED", { Error: "put parameter call failed" }, returnData);
+
             } else {
-                responseStatus = "SUCCESS";
-                responseData = { Message: `Successfully Created ${parameterName}` }
+                sendResponse(event, context, "SUCCESS", { Message: `Successfully Created ${parameterName}` }, returnData);
             }
         })
     } catch (err) {
-        responseData = { Error: "handler call failed" };
-        console.log(responseData.Error + ":\n", err);
+        console.log(err);
+        sendResponse(event, context, "FAILED", { Error: "handler call failed" }, returnData);
     }
-    return sendResponse(event, context, responseStatus, responseData);
 };
 
 // Send response to the pre-signed S3 URL 

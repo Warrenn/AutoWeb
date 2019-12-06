@@ -96,6 +96,9 @@ Outputs:
   AirborneTimeFunctionIamRole:
     Description: "Implicit IAM Role created for Airborne Time function"
     Value: !GetAtt AirborneTimeFunctionRole.Arn
-  CustomProvisionArn:
-    Description: "The arn for the custom resource"
-    Value: !GetAtt CustomProvision.Arn
+  CustomProvisionLogGroupName:
+    Description: "The Log-Group name for the custom resource"
+    Value: !GetAtt CustomProvision.logGroupName
+  CustomProvisionLogStreamName:
+    Description: "The Log-Stream name for the custom resource"
+    Value: !GetAtt CustomProvision.logStreamName
